@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>习思想刷题工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            padding: 20px 0;
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .streak-info {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            color: white;
+            text-align: center;
+        }
+        
+        .streak-count {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            color: white;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+        
+        .menu {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .menu-btn {
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            color: white;
+        }
+        
+        .btn-primary { background: #4CAF50; }
+        .btn-secondary { background: #2196F3; }
+        .btn-warning { background: #ff9800; }
+        .btn-danger { background: #f44336; }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .question-number {
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .chapter-tag {
+            background: #667eea;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
+        
+        .question-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .option {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .option:hover {
+            border-color: #667eea;
+            background: #f5f5ff;
+        }
+        
+        .option.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+        
+        .option.correct {
+            border-color: #4CAF50;
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .option.wrong {
+            border-color: #f44336;
+            background: #f44336;
+            color: white;
+        }
+        
+        .option.disabled {
+            pointer-events: none;
+        }
+        
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .feedback.show-correct {
+            background: #e8f5e9;
+            border: 1px solid #4CAF50;
+            display: block;
+        }
+        
+        .feedback.show-wrong {
+            background: #ffebee;
+            border: 1px solid #f44336;
+            display: block;
+        }
+        
+        .feedback-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .show-correct .feedback-title { color: #4CAF50; }
+        .show-wrong .feedback-title { color: #f44336; }
+        
+        .explanation {
+            color: #666;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .action-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            color: white;
+            background: #667eea;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s;
+        }
+        
+        .chapter-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            background: white;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            opacity: 1;
+        }
+        
+        .mode-indicator {
+            text-align: center;
+            color: white;
+            padding: 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .result-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+        
+        .result-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .result-label {
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 习思想刷题工具</h1>
+            <div class="streak-info">
+                <div>🔥 连续答对</div>
+                <div class="streak-count" id="streakCount">0</div>
+                <div>题</div>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="totalAnswered">0</div>
+                <div class="stat-label">已答题</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="correctCount">0</div>
+                <div class="stat-label">正确</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="wrongCount">0</div>
+                <div class="stat-label">错误</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="wrongCollectionCount">0</div>
+                <div class="stat-label">错题本</div>
+            </div>
+        </div>
+        
+        <div class="menu" id="mainMenu">
+            <button class="menu-btn btn-primary" id="btnAll">全部练习</button>
+            <button class="menu-btn btn-secondary" id="btnChapter">章节练习</button>
+            <button class="menu-btn btn-warning" id="btnWrong">错题复习</button>
+            <button class="menu-btn btn-danger" id="btnClear">清除进度</button>
+        </div>
+        
+        <div class="card hidden" id="chapterSelectCard">
+            <h3 style="margin-bottom: 15px;">选择章节</h3>
+            <select class="chapter-select" id="chapterSelect"></select>
+            <button class="menu-btn btn-secondary" id="btnStartChapter" style="width: 100%; margin-top: 10px;">开始练习</button>
+            <button class="menu-btn btn-danger" id="btnBack1" style="width: 100%; margin-top: 10px;">返回菜单</button>
+        </div>
+        
+        <div class="progress-bar hidden" id="progressBar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        
+        <div class="mode-indicator hidden" id="modeIndicator"></div>
+        
+        <div id="questionContainer"></div>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const questions = [
+            {id:1,chapter:"导论",text:"习近平新时代中国特色社会主义思想核心要义是（ ）。",options:["坚持党的领导","坚持以人民为中心","坚持和发展中国特色社会主义","五位一体总体布局"],answer:2,explain:"坚持和发展中国特色社会主义，是改革开放以来我们党全部理论和实践的鲜明主题也是习近平新时代中国特色社会主义思想的核心要义。"},
+            {id:2,chapter:"导论",text:"把习近平新时代中国特色社会主义思想载入宪法的会议是（ ）。",options:["党的十九大","十三届全国人大一次会议","党的十九届二中全会","党的十九届三中全会"],answer:1,explain:"党的十九大通过的党章修正案，把习近平新时代中国特色社会主义思想确立为党的指导思想，十三届全国人大一次会议把这一思想载入宪法。"},
+            {id:3,chapter:"导论",text:"习近平新时代中国特色社会主义的主要创立者是（ ）。",options:["习近平","以习近平同志为核心的党中央","以习近平同志为核心的中央军事委员会","以习近平同志为核心的中共中央政治局常委会"],answer:0,explain:"习近平新时代中国特色社会主义思想，是党和人民实践经验和集体智慧的结晶，主要创立者是习近平。"},
+            {id:4,chapter:"导论",text:"习近平新时代中国特色社会主义思想的主体内容是（ ）。",options:["十个明确","十三个方面成就","十四个坚持","六个必须坚持"],answer:0,explain:"十个明确是习近平新时代中国特色社会主义思想的主体内容，集中体现了这一思想体系的主要观点和基本精神。"},
+            {id:5,chapter:"导论",text:"习近平新时代中国特色社会主义思想的基本方略是（ ）。",options:["十个明确","十三个方面成就","十四个坚持","六个必须坚持"],answer:2,explain:"十四个坚持是习近平新时代中国特色社会主义思想的重要组成部分，构成了新时代坚持和发展中国特色社会主义的基本方略。"},
+            {id:6,chapter:"导论",text:"习近平新时代中国特色社会主义思想的理论与实践成果是（ ）。",options:["十个明确","十三个方面成就","十四个坚持","六个必须坚持"],answer:1,explain:"十三个方面成就对新时代伟大实践进行了科学总结，全景式地展示了习近平新时代中国特色社会主义思想的理论与实践成果。"},
+            {id:7,chapter:"导论",text:"习近平新时代中国特色社会主义思想的根本价值立场是（ ）。",options:["人民至上","自信自立","守正创新","问题导向"],answer:0,explain:"坚持人民至上是习近平新时代中国特色社会主义思想的根本价值立场，体现了历史唯物主义群众史观。"},
+            {id:8,chapter:"第一章",text:"关系党的事业兴衰成败第一位的问题是（ ）。",options:["组织问题","理论基础","物质基础","道路问题"],answer:3,explain:"道路问题是关系党的事业兴衰成败第一位的问题。"},
+            {id:9,chapter:"第一章",text:"党和人民历经千辛万苦、付出巨大代价取得的根本成就是（ ）。",options:["中国特色社会主义","中华人民共和国成立 75 周年","中国共产党成立 100 周年","全面建成小康社会"],answer:0,explain:"中国特色社会主义是党和人民历经千辛万苦、付出巨大代价取得的根本成就。"},
+            {id:10,chapter:"第一章",text:"历史已经并将继续证明，只有（）才能救中国，只有坚持和发展（）才能实现中华民族伟大复兴。",options:["社会主义 中国特色社会主义","中国特色社会主义 社会主义","马克思主义 社会主义","马克思主义 中国特色社会主义"],answer:0,explain:"只有社会主义才能救中国，只有坚持和发展中国特色社会主义才能实现中华民族伟大复兴。"},
+            {id:11,chapter:"第一章",text:"党的十九大对我国发展新的历史方位作出的重大政治判断是（ ）。",options:["我国社会主要矛盾发生了变化","我国开启了强起来的时代","中国特色社会主义进入新时代","分两步走实现社会主义现代化强国"],answer:2,explain:"中国特色社会主义进入了新时代，这是我国发展新的历史方位。"},
+            {id:12,chapter:"第一章",text:"党的十九大提出，我国主要矛盾已经转化为（ ）。",options:["人民日益增长的物质文化生活需要和不平衡不充分的发展之间的矛盾","人民日益增长的美好生活需要和落后的社会生产之间的矛盾","人民对于建立先进的工业国的需要与落后的农业国之间的矛盾","人民日益增长的美好生活需要和不平衡不充分的发展之间的矛盾"],answer:3,explain:"我国社会主要矛盾已经转化为人民日益增长的美好生活需要和不平衡不充分的发展之间的矛盾。"},
+            {id:13,chapter:"第一章",text:"我们党作出中国特色社会主义进入新时代重大判断的基本依据是（ ）。",options:["党的主要任务发生新变化","我国社会主要矛盾发生新变化","中国的国际地位发生新变化","世界国际关系发生新变化"],answer:1,explain:"我国社会主要矛盾的变化是我们党作出中国特色社会主义进入新时代重大判断的基本依据。"},
+            {id:14,chapter:"第一章",text:"我们党鲜明的政治品格和强大的政治优势是（ ）。",options:["马克思主义科学理论","邓小平理论","三个代表重要思想","科学发展观"],answer:0,explain:"拥有马克思主义科学理论指导是我们党鲜明的政治品格和强大的政治优势。"},
+            {id:15,chapter:"第一章",text:"新时代党和国家事业发展的根本遵循是（ ）。",options:["习近平新时代中国特色社会主义思想","邓小平理论","三个代表重要思想","科学发展观"],answer:0,explain:"习近平新时代中国特色社会主义思想是新时代党和国家事业发展的根本遵循。"},
+            {id:16,chapter:"第一章",text:"国家的生命线、人民的幸福线是（ ）。",options:["党的基本路线","党的基本理论","党的基本方略","党的基本经验"],answer:0,explain:"党的基本路线是国家的生命线、人民的幸福线。"},
+            {id:17,chapter:"第一章",text:"中国特色社会主义事业总体布局的中心是（ ）。",options:["生态文明建设","精神文明建设","政治文明建设","经济建设"],answer:3,explain:"坚持以经济建设为中心，努力推动社会主义物质文明、政治文明、精神文明、社会文明、生态文明协调发展。"},
+            {id:18,chapter:"第二章",text:"2012 年 11 月 29 日，习近平率中央政治局常委参观的展览是（ ）。",options:["奋斗之路","振兴之路","复兴之路","大国之路"],answer:2,explain:"2012 年 11 月 29 日，习近平率中央政治局常委和中央书记处的同志来到国家博物馆，参观《复兴之路》展览。"},
+            {id:19,chapter:"第二章",text:"提出到 2020 年全面建成小康社会奋斗目标的是（ ）。",options:["党的十六大","党的十七大","党的十八大","党的十九大"],answer:2,explain:"党的十八大提出了到 2020 年全面建成小康社会的奋斗目标。"},
+            {id:20,chapter:"第二章",text:"2021 年 7 月 1 日，习近平庄严宣告我们实现了（ ）。",options:["社会主义现代化","中华民族伟大复兴","第一个百年奋斗目标","第二个百年奋斗目标"],answer:2,explain:"我们实现了第一个百年奋斗目标，在中华大地上全面建成了小康社会。"},
+            {id:21,chapter:"第二章",text:"中华民族伟大复兴的形象表达是（ ）。",options:["共同富裕","中国梦","自强不息","坚韧不拔"],answer:1,explain:"中国梦是中华民族伟大复兴的形象表达。"},
+            {id:22,chapter:"第二章",text:"近代以来中华民族最伟大的梦想是（ ）。",options:["实现民族解放、国家独立","摆脱贫困","全面建成小康社会","实现中华民族的伟大复兴"],answer:3,explain:"实现中华民族伟大复兴，就是中华民族近代以来最伟大的梦想。"},
+            {id:23,chapter:"第二章",text:"在中国，实现强国建设、民族复兴的唯一正确道路是（ ）。",options:["中国式资本化","中国式现代化","中国式军事化","中国式民主化"],answer:1,explain:"中国式现代化是强国建设、民族复兴的唯一正确道路。"},
+            {id:24,chapter:"第二章",text:"近代中国谋求现代化的第一份蓝图是（ ）。",options:["建国方略","中华民国临时约法","中华民国训政时期约法","中华民国宪法"],answer:0,explain:"孙中山的《建国方略》被称为近代中国谋求现代化的第一份蓝图。"},
+            {id:25,chapter:"第二章",text:"我国全体人民整体迈进现代化，人口规模超过现有发达国家的总和，这说明中国式现代化是（ ）的现代化。",options:["全体人民共同富裕","物质文明和精神文明相协调","人口规模巨大","人与自然和谐共生"],answer:2,explain:"中国式现代化是人口规模巨大的现代化。"},
+            {id:26,chapter:"第二章",text:"全面建设社会主义现代化国家的主心骨和领航者是（ ）。",options:["各民主党派","中国共产党","人民群众","知识分子"],answer:1,explain:"中国共产党是全面建设社会主义现代化国家的主心骨和领航者。"},
+            {id:27,chapter:"第二章",text:"推进现代化最坚实的根基、最深厚的力量是（ ）。",options:["各民主党派","中国共产党","人民群众","知识分子"],answer:2,explain:"人民是推进现代化最坚实的根基、最深厚的力量。"},
+            {id:28,chapter:"第二章",text:"要深刻洞察世界发展大势，准确把握人民群众共同愿望，深入探索经济社会发展规律，制定好规划和政策体系。这说明要处理好（ ）。",options:["效率与公平的关系","守正与创新的关系","战略与策略的关系","顶层设计与实践探索的关系"],answer:3,explain:"这属于在推进中国式现代化过程中要正确处理顶层设计与实践探索的关系。"},
+            {id:29,chapter:"第二章",text:"要把战略的原则性和策略的灵活性有机结合起来，这说明要处理好（ ）。",options:["效率与公平的关系","守正与创新的关系","战略与策略的关系","顶层设计与实践探索的关系"],answer:2,explain:"这属于在推进中国式现代化过程中要正确处理战略与策略的关系。"},
+            {id:30,chapter:"第二章",text:"把国家和民族发展放在自己力量的基点上，拓展中国式现代化的发展空间。这说明要处理好（ ）。",options:["效率与公平的关系","守正与创新的关系","战略与策略的关系","自立自强与对外开放的关系"],answer:3,explain:"这属于正确处理自立自强与对外开放的关系。"},
+            {id:31,chapter:"第三章",text:"中国特色社会主义最本质的特征是（ ）。",options:["共同富裕","不断解放和发展生产力","消灭剥削，消除两极分化","中国共产党领导"],answer:3,explain:"中国特色社会主义最本质的特征是中国共产党领导。"},
+            {id:32,chapter:"第三章",text:"坚持和发展中国特色社会主义的必由之路是（ ）。",options:["全面从严治党","贯彻新发展理念","团结奋斗","党的全面领导"],answer:3,explain:"坚持党的全面领导是坚持和发展中国特色社会主义的必由之路。"},
+            {id:33,chapter:"第三章",text:"中国最高政治领导力量是（ ）。",options:["人民群众","政协主席","中国共产党","人大代表"],answer:2,explain:"中国共产党作为最高政治领导力量。"},
+            {id:34,chapter:"第三章",text:"加强和维护（）是全党共同的政治责任。",options:["平等自愿","党中央权威和集中统一领导","党中央权威和共同领导","少数服从多数"],answer:1,explain:"加强和维护党中央权威和集中统一领导，是全党共同的政治责任。"},
+            {id:35,chapter:"第三章",text:"党的领导的最高原则是（ ）。",options:["平等自愿","党的代表大会制度","民主集中制","党中央集中统一领导"],answer:3,explain:"党中央集中统一领导是党的领导的最高原则。"},
+            {id:36,chapter:"第三章",text:"党保持团结统一和强大战斗力、不断取得胜利的关键是（ ）。",options:["平等自愿","少数服从多数","民主集中制","党中央集中统一领导"],answer:3,explain:"党中央集中统一领导是党保持团结统一和强大战斗力、不断取得胜利的关键所在。"},
+            {id:37,chapter:"第三章",text:"我国的根本领导制度是（ ）。",options:["党的领导制度","多党合作制度","民主选举制度","政治协商制度"],answer:0,explain:"党的十九届四中全会进一步将党的领导制度明确为我国根本领导制度。"},
+            {id:38,chapter:"第三章",text:"（ ）是党的领导核心地位的必然反映和内在要求。",options:["党的领导制度","多党合作制度","民主选举制度","政治协商制度"],answer:0,explain:"党的领导制度是党的领导核心地位的必然反映和内在要求。"},
+            {id:39,chapter:"第三章",text:"中国特色社会主义制度体系的核心是（ ）。",options:["党的领导制度","多党合作制度","民主选举制度","政治协商制度"],answer:0,explain:"党的领导制度是中国特色社会主义制度体系的核心。"},
+            {id:40,chapter:"第四章",text:"坚持以（）为中心，是贯穿党治国理政全部活动的一条红线。",options:["人民","经济","政治","科技"],answer:0,explain:"坚持以人民为中心，是贯穿党治国理政全部活动的一条红线。"},
+            {id:41,chapter:"第四章",text:"人民在一个国家的地位是由这个国家的（）决定的。",options:["发展水平","发展方式","政权性质","政党制度"],answer:2,explain:"人民在一个国家的地位是由这个国家的政权性质决定的。"},
+            {id:42,chapter:"第四章",text:"第一次真正实现了人民当家作主的国家是（ ）。",options:["封建主义国家","资本主义国家","社会主义国家","共产主义国家"],answer:2,explain:"社会主义国家第一次真正实现了人民当家作主。"},
+            {id:43,chapter:"第四章",text:"我国的各级国家机关和重要机构，都冠以（ ）的称号。",options:["国家","中国","公民","人民"],answer:3,explain:"我国的各级国家机关和重要机构，都冠以人民的称号。"},
+            {id:44,chapter:"第四章",text:"习近平指出：（ ）是出卷人，（ ）是答卷人，（ ）是阅卷人。",options:["世界、我们、人民","人民、我们、世界","人民、我们、时代","时代、我们、人民"],answer:3,explain:"时代是出卷人，我们是答卷人，人民是阅卷人。"},
+            {id:45,chapter:"第四章",text:"贯彻党的群众路线，（）是基础、是前提。",options:["知","真","行","实"],answer:0,explain:"贯彻党的群众路线，知是基础、是前提，行是重点、是关键。"},
+            {id:46,chapter:"第四章",text:"（ ）是获得真知灼见的源头活水，是贯彻群众路线的有效途径。",options:["求真务实","调查研究","与时俱进","深入基层"],answer:1,explain:"调查研究是获得真知灼见的源头活水。"},
+            {id:47,chapter:"第四章",text:"中国共产党的安身立命之本是（ ）。",options:["自我革命","坚持发展","伟大建党精神","人民群众"],answer:3,explain:"人民群众是共产党的安身立命之本。"},
+            {id:48,chapter:"第五章",text:"作出全面深化改革决定的会议是（ ）。",options:["党的十八届三中全会","党的十八届四中全会","党的十九届三中全会","党的十九届四中全会"],answer:0,explain:"党的十八届三中全会通过了《中共中央关于全面深化改革若干重大问题的决定》。"},
+            {id:49,chapter:"第五章",text:"决定当代中国命运的关键一招是（ ）。",options:["全面深化改革","全面依法治国","全面从严治党","改革开放"],answer:3,explain:"改革开放是决定当代中国命运的关键一招。"},
+            {id:50,chapter:"第五章",text:"作出实行改革开放的历史性决策的会议是（ ）。",options:["党的十一届三中全会","党的十三大","党的十八届三中全会","党的二十大"],answer:0,explain:"党的十一届三中全会作出实行改革开放的历史性决策。"},
+            {id:51,chapter:"第五章",text:"明确了全面深化改革的总目标和主要任务的会议是（ ）。",options:["党的十一届三中全会","党的十八届三中全会","党的十九届四中全会","党的十九届六中全会"],answer:1,explain:"党的十八届三中全会明确了全面深化改革的总目标和主要任务。"},
+            {id:52,chapter:"第五章",text:"勾勒出新时代全面深化改革开放清晰蓝图的会议是（ ）。",options:["党的十一届三中全会","党的十八届三中全会","党的十九届四中全会","党的十九届六中全会"],answer:2,explain:"党的十九届四中全会勾勒出新时代全面深化改革开放更加清晰的蓝图。"},
+            {id:53,chapter:"第五章",text:"在全面深化改革的总目标中，规定了改革的根本方向的是（ ）。",options:["完善和发展中国特色社会主义制度","推进国家治理体系和治理能力现代化","完善和发展社会主义基本经济制度","实现中华民族伟大复兴"],answer:0,explain:"完善和发展中国特色社会主义制度规定了改革的根本方向。"},
+            {id:54,chapter:"第五章",text:"新时代坚持和发展中国特色社会主义的根本动力是（ ）。",options:["全面建成社会主义现代化强国","全面深化改革开放","全面依法治国","全面从严治党"],answer:1,explain:"全面深化改革开放是新时代坚持和发展中国特色社会主义的根本动力。"},
+            {id:55,chapter:"第五章",text:"下列关于开放与改革的关系，说法正确的是（ ）。",options:["开放也是改革","开放与改革相互独立","开放与改革相互对立","改革也是开放"],answer:0,explain:"开放也是改革。以开放促改革、促发展是我国发展不断取得新成就的宝贵经验。"},
+            {id:56,chapter:"第五章",text:"党的十八大以来，我们坚定实行（）的开放战略。",options:["保守封闭","适当紧缩","消极被动","积极主动"],answer:3,explain:"党的十八大以来，我们坚定不移扩大对外开放，实行更加积极主动的开放战略。"},
+            {id:57,chapter:"第六章",text:"解决我国一切问题的基础和关键是（ ）。",options:["发展","改革","创新","开放"],answer:0,explain:"发展是解决我国一切问题的基础和关键。"},
+            {id:58,chapter:"第六章",text:"新时代我国经济社会发展的鲜明主题、全面建设社会主义现代化国家的首要任务是（ ）。",options:["高质量发展","改革开放","创新型国家","对外开放"],answer:0,explain:"高质量发展是新时代我国经济社会发展的鲜明主题。"},
+            {id:59,chapter:"第六章",text:"实现高质量发展的指导原则是（ ）。",options:["习近平政治思想","新发展理念","政治经济学","马克思主义政治经济学"],answer:1,explain:"新发展理念是实现高质量发展的指导原则。"},
+            {id:60,chapter:"第六章",text:"我国经济目前处于的发展阶段是（ ）。",options:["低速增长阶段","中速增长阶段","高速增长阶段","高质量发展阶段"],answer:3,explain:"我国经济已由高速增长阶段转向高质量发展阶段。"},
+            {id:61,chapter:"第六章",text:"党的十八届三中全会提出使市场在资源配置中发挥决定性作用，主要涉及（ ）。",options:["政治体制改革","经济体制改革","文化体制改革","转变政府职能"],answer:1,explain:"党的十八届三中全会强调深化经济体制改革。"},
+            {id:62,chapter:"第六章",text:"新时代推动实现高质量发展的制度基础是（ ）。",options:["中国特色社会主义法治制度","中国特色社会主义政府治理重要制度","社会主义基本政治制度","社会主义基本经济制度"],answer:3,explain:"社会主义基本经济制度是新时代推动实现高质量发展的制度基础。"},
+            {id:63,chapter:"第六章",text:"在经济制度体系中具有基础性决定性地位的是（ ）。",options:["社会主义市场经济体制","社会主义所有制形式","社会主义基本经济制度","社会主义基本分配制度"],answer:2,explain:"社会主义基本经济制度在经济制度体系中具有基础性决定性地位。"},
+            {id:64,chapter:"第六章",text:"我国社会主义基本经济制度的基础是（ ）。",options:["所有制结构","分配方式","资源配置方式","消费制度"],answer:0,explain:"所有制结构是基本经济制度的基础。"},
+            {id:65,chapter:"第六章",text:"推动高质量发展的战略基点是（ ）。",options:["进入新发展阶段","贯彻新经济理念","构建新发展格局","实现中华民族伟大复兴"],answer:2,explain:"构建新发展格局是推动高质量发展的战略基点。"},
+            {id:66,chapter:"第六章",text:"我国把握未来发展主动权的先手棋是（ ）。",options:["进入新发展阶段","贯彻新发展理念","构建新发展格局","推进高质量发展"],answer:2,explain:"构建新发展格局是把握未来发展主动权的先手棋。"},
+            {id:67,chapter:"第六章",text:"（ ）是市场经济内在关系的两个基本方面。",options:["市场与政府","国内与国外","商品与货币","供给和需求"],answer:3,explain:"供给和需求是市场经济内在关系的两个基本方面。"},
+            {id:68,chapter:"第六章",text:"支撑我国国际竞争力的基石是（ ）。",options:["保持优势产业的领先地位","保持公有制经济的领先地位","保持实体经济的领先地位","保持国有企业的领先地位"],answer:0,explain:"保持优势产业的领先地位，是支撑我国国际竞争力的基石。"},
+            {id:69,chapter:"第六章",text:"引领国家未来产业发展的决定性力量是（ ）。",options:["实体经济","战略性新兴产业","国家优势产业","优质服务业"],answer:1,explain:"战略性新兴产业是引领国家未来产业发展的决定性力量。"},
+            {id:70,chapter:"第六章",text:"全面建设社会主义现代化国家，最艰巨最繁重的任务在（ ）。",options:["西部城市","边疆地区","城镇","农村"],answer:3,explain:"全面建设社会主义现代化国家，最艰巨最繁重的任务依然在农村。"},
+            {id:71,chapter:"第七章",text:"全面建设社会主义现代化国家，根本是（ ）。",options:["教育","科技","人才","创新"],answer:0,explain:"全面建设社会主义现代化国家，教育是根本，科技是关键，人才是基础。"},
+            {id:72,chapter:"第七章",text:"决定我国生存和发展的基础能力是（ ）。",options:["创新驱动发展","科技自立自强","人才引领驱动","教育优先发展"],answer:1,explain:"科技自立自强是决定我国生存和发展的基础能力。"},
+            {id:73,chapter:"第七章",text:"推动党和国家各项事业发展的重要先手棋是（ ）。",options:["创新驱动发展","科技自立自强","人才引领驱动","教育优先发展"],answer:3,explain:"教育优先发展是推动党和国家各项事业发展的重要先手棋。"},
+            {id:74,chapter:"第七章",text:"落实立德树人根本任务的关键课程是（ ）。",options:["基础文化理论课","劳动技术教育课","思想政治理论课","社会公德教育课"],answer:2,explain:"思想政治理论课是落实立德树人根本任务的关键课程。"},
+            {id:75,chapter:"第七章",text:"巩固和发展社会主义制度的基本前提是（ ）。",options:["坚持党对教育工作的全面领导","坚持中国特色社会主义教育道路","培养理想信念坚定的社会主义建设者和接班人","培养德才兼备的社会公民"],answer:2,explain:"培养理想信念坚定的社会主义建设者和接班人是基本前提。"},
+            {id:76,chapter:"第七章",text:"建设教育强国最重要的基础工作是（ ）。",options:["坚定不移推进教育公平","构建全社会共同育人格局","加强教育基础设施建设","加强教师队伍建设"],answer:3,explain:"要把加强教师队伍建设作为建设教育强国最重要的基础工作。"},
+            {id:77,chapter:"第七章",text:"全面建成社会主义现代化强国的关键是（ ）。",options:["教育优先发展","人才引领驱动","创新驱动发展","科技自立自强"],answer:3,explain:"全面建成社会主义现代化强国关键看科技自立自强。"},
+            {id:78,chapter:"第七章",text:"世界科技强国竞争的着力点是（ ）。",options:["国家战略科技力量","国家自主创新力量","国家科技人才力量","国家基础科技力量"],answer:0,explain:"国家战略科技力量是世界科技强国竞争的着力点。"},
+            {id:79,chapter:"第七章",text:"实现民族振兴、赢得国际竞争主动的战略资源是（ ）。",options:["人才","科技","文化","信息"],answer:0,explain:"人才是实现民族振兴、赢得国际竞争主动的战略资源。"},
+            {id:80,chapter:"第七章",text:"信息化时代，推动社会发展最活跃、最积极的因素是（ ）。",options:["科技","政策","人才","信息"],answer:2,explain:"人才已经成为推动社会发展最活跃、最积极的因素。"},
+            {id:81,chapter:"第七章",text:"做好人才工作的根本保证是（ ）。",options:["坚持为经济社会发展服务","坚持营造识才爱才敬才用才的环境","坚持深化人才发展体制机制改革","坚持党对人才工作的全面领导"],answer:3,explain:"坚持党对人才工作的全面领导是做好人才工作的根本保证。"},
+            {id:82,chapter:"第八章",text:"一个国家实行什么样的民主制度，必须与这个国家的（）相适应。",options:["上层建筑","经济基础","国情","国家制度"],answer:2,explain:"民主必须与这个国家的国情相适应。"},
+            {id:83,chapter:"第八章",text:"人民民主是一种新型的（）民主。",options:["资本主义","共产主义","封建主义","社会主义"],answer:3,explain:"人民民主是一种新型的社会主义民主。"},
+            {id:84,chapter:"第八章",text:"发展社会主义（ ），是全面建设社会主义现代化国家的内在要求。",options:["精英政治","寡头政治","民主政治","平民政治"],answer:2,explain:"发展社会主义民主政治，是全面建设社会主义现代化国家的内在要求。"},
+            {id:85,chapter:"第八章",text:"（ ）植根于我国社会主义民主的长期实践。",options:["全过程人民民主","间接民主","直接民主","程序民主"],answer:0,explain:"全过程人民民主植根于我国社会主义民主的长期实践。"},
+            {id:86,chapter:"第八章",text:"全过程人民民主彰显了人民民主的（ ）。",options:["广泛性","真实性","公平性","均衡性"],answer:1,explain:"全过程人民民主彰显了人民民主的真实性。"},
+            {id:87,chapter:"第八章",text:"使民主原则覆盖各类议题、各个领域、各个层级。这体现了全过程人民民主是（）的民主。",options:["全链条","全方位","全媒体","全覆盖"],answer:3,explain:"全过程人民民主是全覆盖的民主。"},
+            {id:88,chapter:"第八章",text:"能够保证人民当家作主的根本政治制度是（ ）。",options:["基层群众自治制度","民族区域自治制度","多党合作和政治协商制度","人民代表大会制度"],answer:3,explain:"人民代表大会制度是我国根本政治制度。"},
+            {id:89,chapter:"第八章",text:"中国社会主义民主政治中独特的、独有的、独到的民主形式是（ ）。",options:["人民民主","决策民主","管理民主","协商民主"],answer:3,explain:"协商民主是中国社会主义民主政治中独特的民主形式。"},
+            {id:90,chapter:"第八章",text:"人民政协履行职责围绕的主题是（ ）。",options:["团结和民主","党的中心任务","加强党的领导","发挥统一战线优势"],answer:0,explain:"人民政协工作围绕团结和民主两大主题。"},
+            {id:91,chapter:"第八章",text:"解决民族问题的根本出发点和归宿是（ ）。",options:["坚持民族平等","坚持民族团结","反对民族分裂","各民族共同繁荣"],answer:3,explain:"解决民族问题的根本出发点和归宿是各民族共同繁荣。"},
+            {id:92,chapter:"第八章",text:"中国共产党夺取革命、建设、改革事业胜利的重要法宝是（ ）。",options:["武装斗争","统一战线","实事求是","独立自主"],answer:1,explain:"统一战线是中国共产党夺取革命、建设、改革事业胜利的重要法宝。"},
+            {id:93,chapter:"第八章",text:"积极引导宗教与（ ）相适应。",options:["修正主义","共产主义","社会主义社会","科学社会主义"],answer:2,explain:"积极引导宗教与社会主义社会相适应。"},
+            {id:94,chapter:"第九章",text:"（ ）是全面推进依法治国的行动指南。",options:["中国特色社会主义制度","中国特色社会主义法治理论","党的领导","人民民主专政"],answer:1,explain:"中国特色社会主义法治理论是全面推进依法治国的行动指南。"},
+            {id:95,chapter:"第九章",text:"国家治理体系和治理能力的重要依托是（ ）。",options:["法治","德治","党的领导","人民"],answer:0,explain:"法治是国家治理体系和治理能力的重要依托。"},
+            {id:96,chapter:"第九章",text:"建设中国特色社会主义法治体系，是坚持和发展中国特色社会主义的（ ）。",options:["外在要求","额外要求","核心要求","内在要求"],answer:3,explain:"建设中国特色社会主义法治体系是内在要求。"},
+            {id:97,chapter:"第九章",text:"中国特色社会主义法治体系，本质上是（）的法律表现形式。",options:["中国特色社会主义道路","中国特色社会主义理论","中国特色社会主义制度","中国特色社会主义文化"],answer:2,explain:"中国特色社会主义法治体系本质上是中国特色社会主义制度的法律表现形式。"},
+            {id:98,chapter:"第九章",text:"首次提出推进法治中国建设的目标是在（ ）。",options:["党的十八届三中全会","党的十八届四中全会","党的十九届三中全会","党的十九届四中全会"],answer:0,explain:"党的十八届三中全会首次提出推进法治中国建设的目标。"},
+            {id:99,chapter:"第九章",text:"2020 年，中共中央印发（ ），对法治中国建设作出系统部署。",options:["《法治中国建设规划（2020-2025 年）》","《法治中国建设规划（2020-2030 年）》","《法治中国建设规划（2020-2035 年）》","《法治中国建设规划（2020-2050 年）》"],answer:0,explain:"2020 年，中共中央印发《法治中国建设规划（2020-2025 年）》。"},
+            {id:100,chapter:"第九章",text:"党领导人民治理国家的基本方式是（ ）。",options:["依法执政","依规治党","依法治国","依宪治国"],answer:2,explain:"依法治国是党领导人民治理国家的基本方式。"},
+            {id:101,chapter:"第十章",text:"我们坚定文化自信的深厚基础是（ ）。",options:["中华优秀传统文化","革命文化和社会主义先进文化","中国特色社会主义伟大工程","中国特色社会主义伟大实践"],answer:0,explain:"中华优秀传统文化是我们坚定文化自信的深厚基础。"},
+            {id:102,chapter:"第十章",text:"我们坚定文化自信的坚强基石是（ ）。",options:["中华优秀传统文化","党带领人民在伟大斗争中孕育的革命文化和社会主义先进文化","中国特色社会主义伟大工程","中国特色社会主义伟大实践"],answer:1,explain:"革命文化和社会主义先进文化是我们坚定文化自信的坚强基石。"},
+            {id:103,chapter:"第十章",text:"我们坚定文化自信的现实基础是（ ）。",options:["中华优秀传统文化","革命文化和社会主义先进文化","中国特色社会主义伟大工程","中国特色社会主义伟大实践"],answer:3,explain:"中国特色社会主义伟大实践是我们坚定文化自信的现实基础。"},
+            {id:104,chapter:"第十章",text:"坚持二为方向就是（ ）。",options:["坚持以党为旗帜、以人民为中心","坚持大众创业、万众创新","坚持为人民服务、为社会主义服务","坚持百花齐放、百家争鸣"],answer:2,explain:"坚持二为方向就是坚持为人民服务、为社会主义服务。"},
+            {id:105,chapter:"第十章",text:"（ ）在意识形态领域指导地位的制度是根本制度。",options:["马克思主义","列宁主义","共产主义","社会主义"],answer:0,explain:"坚持马克思主义在意识形态领域指导地位的制度是根本制度。"},
+            {id:106,chapter:"第十章",text:"（ ）处在意识形态斗争前沿，是治国理政、定国安邦的大事。",options:["社会工作","经济工作","新闻舆论工作","教育工作"],answer:2,explain:"新闻舆论工作处在意识形态斗争前沿。"},
+            {id:107,chapter:"第十章",text:"（ ）必须带头弘扬和践行社会主义核心价值观。",options:["党员、模范","公众人物、先进模范","青年、学生","党员、干部"],answer:3,explain:"党员、干部必须带头弘扬和践行社会主义核心价值观。"},
+            {id:108,chapter:"第十章",text:"不断提高全体人民道德素质的灵魂工程是（ ）。",options:["实施公民法治素养建设工程","实施公民爱国主义教育工程","实施公民道德建设工程","实施公民价值观养成工程"],answer:2,explain:"实施公民道德建设工程是灵魂工程。"},
+            {id:109,chapter:"第十章",text:"在中华文明的突出特性中，（ ）决定了中华民族各民族文化融为一体。",options:["连续性","创新性","统一性","包容性"],answer:2,explain:"统一性从根本上决定了中华民族各民族文化融为一体。"},
+            {id:110,chapter:"第十章",text:"在中华文明的突出特性中，（ ）决定了中华文化对世界文明兼收并蓄的开放胸怀。",options:["连续性","创新性","统一性","包容性"],answer:3,explain:"包容性决定了中华文化对世界文明兼收并蓄的开放胸怀。"},
+            {id:111,chapter:"第十章",text:"（ ）就是要按照时代的新进步新进展，对中华优秀传统文化的内涵加以补充、拓展、完善。",options:["创造性发展","创造性转化","创新性发展","创新性转化"],answer:2,explain:"创新性发展，就是要按照时代的新进步新进展，对中华优秀传统文化的内涵加以补充、拓展、完善。"},
+            {id:112,chapter:"第十一章",text:"改善民生的前提是（ ）。",options:["发展经济","发扬民主","按劳分配","共享改革发展成果"],answer:0,explain:"经济发展是改善民生的前提。"},
+            {id:113,chapter:"第十一章",text:"全面建设社会主义现代化国家，出发点和落脚点是（ ）。",options:["让人民生活越过越好","让经济高质量发展","让政权更加稳固","让生产力得到解放"],answer:0,explain:"全面建设社会主义现代化国家，出发点和落脚点是让人民生活越过越好。"},
+            {id:114,chapter:"第十一章",text:"保障和改善民生的重要前提是（ ）。",options:["正确把握民生和社会保障的关系","正确把握民生和教育的关系","正确把握民生和就业的关系","正确把握民生和发展的关系"],answer:3,explain:"正确把握民生和发展的关系，是保障和改善民生的重要前提。"},
+            {id:115,chapter:"第十一章",text:"最大的民生是（ ）。",options:["教育","医疗","就业","住房"],answer:2,explain:"就业是最大的民生工程、民心工程、根基工程。"},
+            {id:116,chapter:"第十一章",text:"促进共同富裕的基础性制度是（ ）。",options:["基本经济制度","分配制度","税收制度","社会保障制度"],answer:1,explain:"分配制度是促进共同富裕的基础性制度。"},
+            {id:117,chapter:"第十一章",text:"要坚持（ ），把专项治理和系统治理结合起来。",options:["人民导向","问题导向","结果导向","目标导向"],answer:1,explain:"要坚持问题导向。"},
+            {id:118,chapter:"第十一章",text:"国家治理的基石是（ ）。",options:["顶层治理","高层治理","基层治理","中层治理"],answer:2,explain:"基层治理是国家治理的基石。"},
+            {id:119,chapter:"第十二章",text:"生态文明的核心是（ ）。",options:["坚持人与自然和谐共生","尊重自然","顺应自然","保护自然"],answer:0,explain:"生态文明的核心是坚持人与自然和谐共生。"},
+            {id:120,chapter:"第十二章",text:"生态环境保护和经济发展的关系是（ ）。",options:["相互矛盾","相互对立","辩证统一、相辅相成","没有关系"],answer:2,explain:"二者是辩证统一、相辅相成的关系。"},
+            {id:121,chapter:"第十二章",text:"五位一体总体布局中，应摆在全局工作突出位置的是（ ）。",options:["社会建设","生态文明建设","经济建设","政治文明建设"],answer:1,explain:"必须把生态文明建设摆在全局工作的突出位置。"},
+            {id:122,chapter:"第十二章",text:"制度的生命力在于执行，关键在（ ）。",options:["真抓","严抓","惩罚","实干"],answer:0,explain:"制度的生命力在于执行，关键在真抓。"},
+            {id:123,chapter:"第十二章",text:"（ ）是全面建设社会主义现代化国家的重要目标。",options:["建设美丽中国","建设和谐社会","建设现代化中国","建设美丽世界"],answer:0,explain:"建设美丽中国，是全面建设社会主义现代化国家的重要目标。"},
+            {id:124,chapter:"第十二章",text:"推进（ ）工作是破解资源环境约束突出问题的迫切需要。",options:["碳达标","碳中和","双碳","资源节约集约利用"],answer:2,explain:"推进双碳工作是破解资源环境约束突出问题的迫切需要。"},
+            {id:125,chapter:"第十二章",text:"（ ）是各国人民的共同梦想。",options:["建设美丽中国","建设美丽世界","建设绿色家园","建设中国梦"],answer:2,explain:"建设绿色家园是各国人民的共同梦想。"},
+            {id:126,chapter:"第十二章",text:"建设人与自然和谐共生的地球家园，要坚持（ ）。",options:["多边主义","单边主义","极端利己主义","双边主义"],answer:0,explain:"坚持多边主义，推动全球环境治理体系更加公平合理。"},
+            {id:127,chapter:"第十三章",text:"2014 年 4 月 15 日，习近平首次提出（ ）。",options:["科学发展观","总体国家安全观","可持续发展理念","新发展理念"],answer:1,explain:"习近平在中央国家安全委员会第一次会议上首次提出总体国家安全观。"},
+            {id:128,chapter:"第十三章",text:"（ ）为破解我国国家安全面临的难题提供了基本遵循。",options:["科学发展观","总体国家安全观","可持续发展理念","新发展理念"],answer:1,explain:"总体国家安全观为破解我国国家安全面临的难题提供了基本遵循。"},
+            {id:129,chapter:"第十三章",text:"全民国家安全教育日是每年的（ ）。",options:["4 月 5 日","4 月 8 日","4 月 10 日","4 月 15 日"],answer:3,explain:"每年 4 月 15 日为全民国家安全教育日。"},
+            {id:130,chapter:"第十三章",text:"统筹发展和（ ），是党和国家的一项基础性工作。",options:["安全","和平","经济","振兴"],answer:0,explain:"统筹发展和安全，是党和国家的一项基础性工作。"},
+            {id:131,chapter:"第十三章",text:"首次把统筹发展和安全纳入十四五时期指导思想的会议是（ ）。",options:["党的十九大","党的十九届五中全会","党的十九届六中全会","党的二十大"],answer:1,explain:"党的十九届五中全会首次把统筹发展和安全纳入十四五时期指导思想。"},
+            {id:132,chapter:"第十三章",text:"全面构建国家安全制度体系必须坚持以（）为动力。",options:["改革创新","科技创新","科技进步","经济发展"],answer:0,explain:"必须坚持以改革创新为动力。"},
+            {id:133,chapter:"第十三章",text:"（ ）是国家安全制度及其执行能力的集中体现。",options:["生态安全","政治安全","国家安全体系和能力","人民安全"],answer:2,explain:"国家安全体系和能力是国家安全制度及其执行能力的集中体现。"},
+            {id:134,chapter:"第十三章",text:"（ ）是全面建设社会主义现代化国家的重要内容和重要保障。",options:["生态安全","政治安全","国际安全","建设平安中国"],answer:3,explain:"建设平安中国，是全面建设社会主义现代化国家的重要内容和重要保障。"},
+            {id:135,chapter:"第十四章",text:"捍卫国家主权、安全、发展利益的坚强后盾是（ ）。",options:["社会建设","经济建设","国防和军队建设","政治建设"],answer:2,explain:"国防和军队建设是捍卫国家主权、安全、发展利益的坚强后盾。"},
+            {id:136,chapter:"第十四章",text:"新时代，（ ）必须适应推动构建人类命运共同体的战略要求。",options:["人民军队","生态文明建设","统一战线建设","文化强国建设"],answer:0,explain:"新时代，人民军队必须适应推动构建人类命运共同体的战略要求。"},
+            {id:137,chapter:"第十四章",text:"反映军队的根本职能和军队建设的根本指向的是（ ）。",options:["听党指挥","能打胜仗","作风优良","军民团结"],answer:1,explain:"能打胜仗是核心，反映军队的根本职能和军队建设的根本指向。"},
+            {id:138,chapter:"第十四章",text:"根据党的十九大战略安排，到 2035 年，国防和军队建设要（ ）。",options:["建立中国特色现代军事力量体系","全面建成世界一流军队","建立起军民一体化的国家战略体系","基本实现国防和军队现代化"],answer:3,explain:"力争到 2035 年基本实现国防和军队现代化。"},
+            {id:139,chapter:"第十四章",text:"世界新军事革命加速发展，现代战争的核心战斗力是（ ）。",options:["科技","战术","改革","军队数量"],answer:0,explain:"科技是现代战争的核心战斗力。"},
+            {id:140,chapter:"第十四章",text:"新时代我国军队各项建设的出发点和落脚点是（ ）。",options:["听党指挥","提高战斗力","作风优良","政治过硬"],answer:1,explain:"坚持把提高战斗力作为全军各项建设的出发点和落脚点。"},
+            {id:141,chapter:"第十四章",text:"决定人民军队发展壮大、制胜未来的关键一招是（ ）。",options:["政治工作","改革","科技创新","人才"],answer:1,explain:"改革是决定人民军队发展壮大、制胜未来的关键一招。"},
+            {id:142,chapter:"第十五章",text:"香港、澳门回归后保持长期繁荣稳定的最佳制度安排是（ ）。",options:["和平统一","一国两制","一个中国","两岸一家亲"],answer:1,explain:"一国两制是香港、澳门回归后保持长期繁荣稳定的最佳制度安排。"},
+            {id:143,chapter:"第十五章",text:"下列关于一国和两制关系表述错误的是（ ）。",options:["一国是实行两制的前提","一国是实行两制的基础","一国从属和派生于两制","两制统一于一国之内"],answer:2,explain:"一国是实行两制的前提和基础，两制从属和派生于一国。"},
+            {id:144,chapter:"第十五章",text:"特别行政区制度的法律渊源是（ ）。",options:["基本法","宪法","行政法","行政自治条例"],answer:1,explain:"宪法是特别行政区制度的法律渊源。"},
+            {id:145,chapter:"第十五章",text:"（ ）是保障港澳居民根本利益和福祉的好制度。",options:["独立自主","一国两制","和平统一","一个中国制度"],answer:1,explain:"一国两制是保障港澳居民根本利益和福祉的好制度。"},
+            {id:146,chapter:"第十五章",text:"在香港，行政主导体制的核心是（ ）。",options:["特别行政区政府","爱国者","行政长官","主要党派"],answer:2,explain:"坚持以行政长官为核心的行政主导体制。"},
+            {id:147,chapter:"第十五章",text:"（ ）6 月通过的《香港特别行政区维护国家安全法》，成为维护香港稳定的定海神针。",options:["2020 年","2021 年","2022 年","2023 年"],answer:0,explain:"2020 年 6 月，十三届全国人大常委会第二十次会议通过《香港特别行政区维护国家安全法》。"},
+            {id:148,chapter:"第十五章",text:"我国内地最大的外资来源地是（ ）。",options:["澳门","深圳","上海","香港"],answer:3,explain:"香港是我国内地最大的外资来源地。"},
+            {id:149,chapter:"第十五章",text:"明确界定两岸关系的根本性质，确保两岸关系和平发展的关键是（ ）。",options:["坚持两岸一家亲的理念","坚持体现一个中国原则的九二共识","坚持和平统一、一国两制的方针","坚决反对和遏制任何形式的台独"],answer:1,explain:"体现一个中国原则的九二共识，明确界定了两岸关系的根本性质。"},
+            {id:150,chapter:"第十五章",text:"实现祖国统一的最佳方式是（ ）。",options:["维持现状","武力统一","一国两制","和平统一、一国两制"],answer:3,explain:"和平统一、一国两制是实现两岸统一的最佳方式。"},
+            {id:151,chapter:"第十五章",text:"维护两岸和平、促进两岸共同发展、造福两岸同胞的正确道路是（ ）。",options:["独立自主","经济合作","两岸关系和平发展","建立经济共同体"],answer:2,explain:"两岸关系和平发展是正确道路。"},
+            {id:152,chapter:"第十六章",text:"当今世界正处于百年未有之大变局，但时代的主题仍然是（ ）。",options:["调整、变革、发展","和平与发展","合作与共赢","新冷战"],answer:1,explain:"和平与发展仍然是时代主题。"},
+            {id:153,chapter:"第十六章",text:"维护国家主权、安全、发展利益要坚持（ ）。",options:["以民主为基础","以自由为依托","以人权为理念","以国家核心利益为底线"],answer:3,explain:"坚持以国家核心利益为底线维护国家主权、安全、发展利益。"},
+            {id:154,chapter:"第十六章",text:"我国倡导的全球治理观是（ ）。",options:["构建人类命运共同体","和平共处","共商共建共享","均衡发展"],answer:2,explain:"我国倡导共商共建共享的全球治理观。"},
+            {id:155,chapter:"第十六章",text:"下列不属于百年未有之大变局表现的是（ ）。",options:["国际力量对比深刻变化","西方国家主导的经济政治秩序逐渐成型","新一轮科技革命和产业变革深入发展","国际体系和国际秩序深度调整"],answer:1,explain:"百年未有之大变局主要体现在国际力量对比深刻变化、科技革命和产业变革深入发展、国际体系和国际秩序深度调整。"},
+            {id:156,chapter:"第十六章",text:"中国外交政策的宗旨是（ ）。",options:["反对霸权主义","促进一带一路国际合作","推动构建人类命运共同体","维护世界和平、促进共同发展"],answer:3,explain:"中国外交政策的宗旨是维护世界和平、促进共同发展。"},
+            {id:157,chapter:"第十六章",text:"新时代中国外交的基本原则是（ ）。",options:["坚持走特色外交道路","坚持走和平发展道路","坚持走合作共赢道路","坚持走开放包容道路"],answer:1,explain:"坚持走和平发展道路，是新时代中国外交的基本原则。"},
+            {id:158,chapter:"第十六章",text:"睦邻友邦、天下大同等理念体现了中华文明具有突出的（ ）。",options:["凝聚性","统一性","和平性","包容性"],answer:2,explain:"中华文明具有突出的和平性。"},
+            {id:159,chapter:"第十六章",text:"（ ）是我国对外工作的出发点和落脚点。",options:["维护国家形象","维护国家主权、安全、发展利益","维持国际经济收支平衡","联合并支持发展中国家"],answer:1,explain:"维护国家主权、安全、发展利益是我国对外工作的出发点和落脚点。"},
+            {id:160,chapter:"第十六章",text:"新时代我国对外工作的总目标是（ ）。",options:["维护国家利益","维护国家安全","推动构建人类命运共同体","促进人类进步与发展"],answer:2,explain:"推动构建人类命运共同体是新时代对外工作的总目标。"},
+            {id:161,chapter:"第十六章",text:"（ ）反映了世界各国人民普遍认同的价值理念的最大公约数。",options:["全人类共同价值","民族价值观","普世价值","人类命运共同体"],answer:0,explain:"全人类共同价值反映了世界各国人民普遍认同的价值理念的最大公约数。"},
+            {id:162,chapter:"第十六章",text:"共建一带一路应坚持的理念不正确的是（ ）。",options:["开放","绿色","廉洁","畅通"],answer:3,explain:"共建一带一路，坚持开放、绿色、廉洁理念。"},
+            {id:163,chapter:"第十七章",text:"全面建设社会主义现代化国家、全面推进中华民族伟大复兴，关键在（ ）。",options:["全面从严治党","社会革命","完善监督体系","反腐"],answer:0,explain:"关键在党，关键在全面从严治党。"},
+            {id:164,chapter:"第十七章",text:"全面从严治党应坚持把（）放在首位。",options:["思想建设","组织建设","政治建设","文化建设"],answer:2,explain:"全面从严治党应坚持把政治建设放在首位。"},
+            {id:165,chapter:"第十七章",text:"首次把党的政治建设纳入党的建设总体布局的是（ ）。",options:["党的十六大","党的十七大","党的十八大","党的十九大"],answer:3,explain:"党的十九大首次把党的政治建设纳入党的建设总体布局。"},
+            {id:166,chapter:"第十七章",text:"中国共产党政治建设的首要任务是（ ）。",options:["保证全党服从中央，维护党中央权威和集中统一领导","加强党性锻炼，不断提高政治觉悟和政治能力","保证党的基层组织发挥战斗堡垒作用","持之以恒正风肃纪"],answer:0,explain:"保证全党服从中央，维护党中央权威和集中统一领导，是党的政治建设的首要任务。"},
+            {id:167,chapter:"第十七章",text:"新时代决定党的建设方向和效果的是（ ）。",options:["党的思想建设","党的政治建设","党的作风建设","党的制度建设"],answer:1,explain:"党的政治建设是党的根本性建设，决定党的建设方向和效果。"},
+            {id:168,chapter:"第十七章",text:"党长期执政面临的最大威胁是（ ）。",options:["脱离群众","腐败","思想动摇","享乐之风"],answer:1,explain:"腐败是党长期执政面临的最大威胁。"},
+            {id:169,chapter:"第十七章",text:"新时代推进反腐败斗争的鲜明特征是（ ）。",options:["标本兼治","打虎拍蝇","重点治乱","坚定决心"],answer:0,explain:"标本兼治是新时代推进反腐败斗争的鲜明特征。"},
+            {id:170,chapter:"第十七章",text:"我们党最大的优势、最鲜明的品格是（ ）。",options:["密切联系群众","一切从实际出发","勇于自我革命","理论联系实际"],answer:2,explain:"勇于自我革命，是我们党最大的优势、最鲜明的品格。"},
+            {id:171,chapter:"第十七章",text:"通过调动全党积极性、主动性、创造性，破除不合时宜的思想观念等，这体现了党的自我革命的（ ）。",options:["自我净化","自我完善","自我革新","自我提高"],answer:2,explain:"自我革新，就是要善于调动全党积极性、主动性、创造性。"},
+            {id:172,chapter:"第十七章",text:"跳出历史周期率的第二个答案是（ ）。",options:["党内反腐","党的自我革命","全面从严治党","坚守初心使命"],answer:1,explain:"党的自我革命是跳出历史周期率的第二个答案。"}
+        ];
+
+        let currentQuestionIndex = 0;
+        let currentQuestions = [];
+        let wrongCollection = JSON.parse(localStorage.getItem('wrongCollection')) || [];
+        let stats = JSON.parse(localStorage.getItem('stats')) || {total: 0, correct: 0, wrong: 0};
+        let streak = parseInt(localStorage.getItem('streak')) || 0;
+        let currentMode = '';
+        let selectedOption = null;
+
+        function init() {
+            updateStats();
+            updateStreak();
+            populateChapterSelect();
+        }
+
+        function populateChapterSelect() {
+            const chapters = [...new Set(questions.map(q => q.chapter))];
+            const select = document.getElementById('chapterSelect');
+            chapters.forEach(chapter => {
+                const option = document.createElement('option');
+                option.value = chapter;
+                option.textContent = chapter;
+                select.appendChild(option);
+            });
+        }
+
+        function updateStats() {
+            document.getElementById('totalAnswered').textContent = stats.total;
+            document.getElementById('correctCount').textContent = stats.correct;
+            document.getElementById('wrongCount').textContent = stats.wrong;
+            document.getElementById('wrongCollectionCount').textContent = wrongCollection.length;
+        }
+
+        function updateStreak() {
+            document.getElementById('streakCount').textContent = streak;
+        }
+
+        function saveProgress() {
+            localStorage.setItem('wrongCollection', JSON.stringify(wrongCollection));
+            localStorage.setItem('stats', JSON.stringify(stats));
+            localStorage.setItem('streak', streak.toString());
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function startPractice(mode) {
+            currentMode = '全部练习';
+            currentQuestions = shuffleArray([...questions]);
+            currentQuestionIndex = 0;
+            
+            document.getElementById('mainMenu').classList.add('hidden');
+            document.getElementById('chapterSelectCard').classList.add('hidden');
+            document.getElementById('progressBar').classList.remove('hidden');
+            document.getElementById('modeIndicator').classList.remove('hidden');
+            document.getElementById('modeIndicator').textContent = `📝 ${currentMode}`;
+            
+            showQuestion();
+        }
+
+        function showChapterSelect() {
+            document.getElementById('mainMenu').classList.add('hidden');
+            document.getElementById('chapterSelectCard').classList.remove('hidden');
+        }
+
+        function startChapterPractice() {
+            const chapter = document.getElementById('chapterSelect').value;
+            if (!chapter) {
+                showToast('请选择章节');
+                return;
+            }
+            
+            currentMode = `章节练习 - ${chapter}`;
+            currentQuestions = shuffleArray(questions.filter(q => q.chapter === chapter));
+            currentQuestionIndex = 0;
+            
+            document.getElementById('chapterSelectCard').classList.add('hidden');
+            document.getElementById('progressBar').classList.remove('hidden');
+            document.getElementById('modeIndicator').classList.remove('hidden');
+            document.getElementById('modeIndicator').textContent = `📝 ${currentMode}`;
+            
+            showQuestion();
+        }
+
+        function startWrongReview() {
+            if (wrongCollection.length === 0) {
+                showToast('错题本为空，先去练习吧！');
+                return;
+            }
+            
+            currentMode = `错题复习 (${wrongCollection.length}题)`;
+            const wrongIds = wrongCollection.map(w => w.id);
+            currentQuestions = shuffleArray(questions.filter(q => wrongIds.includes(q.id)));
+            currentQuestionIndex = 0;
+            
+            document.getElementById('mainMenu').classList.add('hidden');
+            document.getElementById('chapterSelectCard').classList.add('hidden');
+            document.getElementById('progressBar').classList.remove('hidden');
+            document.getElementById('modeIndicator').classList.remove('hidden');
+            document.getElementById('modeIndicator').textContent = `📝 ${currentMode}`;
+            
+            showQuestion();
+        }
+
+        function backToMenu() {
+            document.getElementById('mainMenu').classList.remove('hidden');
+            document.getElementById('chapterSelectCard').classList.add('hidden');
+            document.getElementById('progressBar').classList.add('hidden');
+            document.getElementById('modeIndicator').classList.add('hidden');
+        }
+
+        function showQuestion() {
+            if (currentQuestionIndex >= currentQuestions.length) {
+                showResult();
+                return;
+            }
+            
+            const q = currentQuestions[currentQuestionIndex];
+            const progress = ((currentQuestionIndex) / currentQuestions.length) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+            
+            const container = document.getElementById('questionContainer');
+            container.innerHTML = `
+                <div class="card question-card active">
+                    <div class="question-header">
+                        <span class="question-number">第${currentQuestionIndex + 1}/${currentQuestions.length}题</span>
+                        <span class="chapter-tag">${q.chapter}</span>
+                    </div>
+                    <div class="question-text">${q.text}</div>
+                    <div class="options">
+                        ${q.options.map((opt, i) => `
+                            <div class="option" data-index="${i}" onclick="selectOption(${i})">
+                                ${String.fromCharCode(65 + i)}. ${opt}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="feedback" id="feedback">
+                        <div class="feedback-title" id="feedbackTitle"></div>
+                        <div class="explanation" id="explanation"></div>
+                    </div>
+                    <div class="action-buttons" id="actionButtons" style="display: none;">
+                        <button onclick="nextQuestion()">下一题</button>
+                    </div>
+                </div>
+            `;
+            
+            selectedOption = null;
+        }
+
+        function selectOption(index) {
+            if (selectedOption !== null) return;
+            
+            selectedOption = index;
+            const q = currentQuestions[currentQuestionIndex];
+            const options = document.querySelectorAll('.option');
+            
+            options.forEach((opt, i) => {
+                opt.classList.add('disabled');
+                if (i === q.answer) {
+                    opt.classList.add('correct');
+                }
+                if (i === index && i !== q.answer) {
+                    opt.classList.add('wrong');
+                }
+            });
+            
+            const isCorrect = index === q.answer;
+            const feedback = document.getElementById('feedback');
+            const feedbackTitle = document.getElementById('feedbackTitle');
+            const explanation = document.getElementById('explanation');
+            const actionButtons = document.getElementById('actionButtons');
+            
+            if (isCorrect) {
+                feedback.className = 'feedback show-correct';
+                feedbackTitle.textContent = '✅ 回答正确！';
+                streak++;
+                stats.correct++;
+            } else {
+                feedback.className = 'feedback show-wrong';
+                feedbackTitle.textContent = '❌ 回答错误';
+                streak = 0;
+                stats.wrong++;
+                
+                if (!wrongCollection.some(w => w.id === q.id)) {
+                    wrongCollection.push({id: q.id, chapter: q.chapter, text: q.text, answer: q.answer, options: q.options, explain: q.explain});
+                }
+            }
+            
+            stats.total++;
+            explanation.textContent = `解析：${q.explain}`;
+            actionButtons.style.display = 'flex';
+            
+            updateStats();
+            updateStreak();
+            saveProgress();
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            showQuestion();
+        }
+
+        function showResult() {
+            const correctRate = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
+            
+            document.getElementById('questionContainer').innerHTML = `
+                <div class="card">
+                    <h2 style="text-align: center; margin-bottom: 20px;">🎉 练习完成！</h2>
+                    <div class="result-stats">
+                        <div class="stat-item">
+                            <div class="result-value" style="color: #667eea;">${currentQuestions.length}</div>
+                            <div class="result-label">总题数</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="result-value" style="color: #4CAF50;">${stats.correct}</div>
+                            <div class="result-label">正确</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="result-value" style="color: #f44336;">${stats.wrong}</div>
+                            <div class="result-label">错误</div>
+                        </div>
+                    </div>
+                    <p style="text-align: center; font-size: 1.2rem; margin-bottom: 20px;">
+                        正确率：<strong style="color: ${correctRate >= 80 ? '#4CAF50' : '#ff9800'}">${correctRate}%</strong>
+                    </p>
+                    ${correctRate < 80 ? '<p style="text-align: center; color: #666; margin-bottom: 20px;">继续加油！建议多复习错题本哦~</p>' : '<p style="text-align: center; color: #4CAF50; margin-bottom: 20px;">太棒了！继续保持！</p>'}
+                    <div class="menu">
+                        <button class="menu-btn btn-primary" onclick="backToMenu()">返回菜单</button>
+                        <button class="menu-btn btn-warning" onclick="startWrongReview()">复习错题</button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('progressBar').classList.add('hidden');
+            document.getElementById('modeIndicator').classList.add('hidden');
+        }
+
+        function clearProgress() {
+            if (confirm('确定要清除所有学习进度吗？包括错题本和统计数据。')) {
+                localStorage.removeItem('wrongCollection');
+                localStorage.removeItem('stats');
+                localStorage.removeItem('streak');
+                wrongCollection = [];
+                stats = {total: 0, correct: 0, wrong: 0};
+                streak = 0;
+                updateStats();
+                updateStreak();
+                showToast('进度已清除');
+            }
+        }
+
+        // 绑定事件
+        document.getElementById('btnAll').addEventListener('click', startPractice);
+        document.getElementById('btnChapter').addEventListener('click', showChapterSelect);
+        document.getElementById('btnStartChapter').addEventListener('click', startChapterPractice);
+        document.getElementById('btnBack1').addEventListener('click', backToMenu);
+        document.getElementById('btnWrong').addEventListener('click', startWrongReview);
+        document.getElementById('btnClear').addEventListener('click', clearProgress);
+
+        init();
+    </script>
+</body>
+</html>
